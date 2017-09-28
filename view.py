@@ -5,7 +5,7 @@ from time import sleep
 width = 500
 height = 500
 offset_x = width/8
-offset_y = height/10
+offset_y = height/8
 win = graphics.GraphWin("Checkers", width, height)
 
 
@@ -18,7 +18,7 @@ def drawBoard():
             color_offset = True
         else:
             color_offset = False
-        for y in range(0,10):
+        for y in range(0,8):
             point = Point(x*offset_x,y*offset_y)
             box = graphics.Rectangle(point, Point(point.x+offset_x, point.y+offset_y))
             box.setFill("Gray")
@@ -53,5 +53,7 @@ def checkMove():
 def draw():
     drawBoard()
     drawCheckers()
+    #sleep(4)
+    #model.checkers[0].moveChecker(model.board[0,0])
     while True:
         checkMove()
