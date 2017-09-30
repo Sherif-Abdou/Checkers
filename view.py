@@ -53,7 +53,4 @@ def checkMove():
 def draw():
     drawBoard()
     drawCheckers()
-    #sleep(4)
-    #model.checkers[0].moveChecker(model.board[0,0])
-    while True:
-        checkMove()
+    win.getMouse()
