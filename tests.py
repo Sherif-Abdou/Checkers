@@ -42,4 +42,22 @@ def testBoard2():
 
 testBoard1()
 testBoard2()
+def testjump3():
+    testboard3 = deepcopy(model.board)
+    testboard3[1,2].checker.black = False
+    jumps = ai.findJumps(testboard3, True)
+    actual = [(2,3),(0,3)]
+    x = 0
+    fail = False
+    for jump in jumps:
+        if jump.piece.x/62.5 == actual[x][0] and jump.piece.y/62.5 == actual[x][1]:
+            pass
+        else:
+            fail = True
 
+        x+=1
+
+    if fail == False:
+        print("Test3: Works")
+
+testjump3()
