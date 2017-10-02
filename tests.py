@@ -1,6 +1,7 @@
 import ai
 import model
 import math
+import uuid
 from copy import deepcopy
 def takeChecker(x,y, board):
     board[x,y].checker = None
@@ -40,8 +41,8 @@ def testBoard2():
     else:
         print("Test2: False")
 
-testBoard1()
-testBoard2()
+# testBoard1()
+# testBoard2()
 def testjump3():
     testboard3 = deepcopy(model.board)
     testboard3[1,2].checker.black = False
@@ -60,4 +61,30 @@ def testjump3():
     if fail == False:
         print("Test3: Works")
 
+    val = ai.minimax(0, True, testboard3)
+    print(val)
+
+def testjump4():
+    testboard4 = deepcopy(model.board)
+    testboard4[1, 2].checker.black = False
+    checker = testboard4[0,5].checker
+    testboard4[0,5].checker = None
+    testboard4[1,4].checker = checker
+    checker.piece = testboard4[1, 4]
+    val = ai.minimax(0, True, testboard4)
+    jumps = ai.findJumps(testboard4, True)
+    actual = [(2,3),(0,3)]
+
+testjump4()
 testjump3()
+
+def testapplymove():
+    testboard = deepcopy(model.board)
+    results = ai.findMoves(testboard, True)
+    board = results[0].apply(testboard)
+    print(board)
+
+# testapplymove()
+#
+# val = ai.minimax(0,False, model.board)
+# print(val)

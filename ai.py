@@ -12,7 +12,18 @@ class Move():
         self.piece = piece
         self.type = type
         self.distance = 1
+        self.weight = None
+        self.origon = None
 
+    def apply(self, board):
+        checker_x = self.checker.piece.x/62.5
+        checker_y = self.checker.piece.y/62.5
+        new_x = self.piece.x/62.5
+        new_y = self.piece.y/62.5
+        board[int(checker_x),int(checker_y)].checker.piece = board[int(new_x), int(new_y)]
+        board[int(new_x), int(new_y)].checker = self.checker
+        board[int(checker_x),int(checker_y)].checker = None
+        return board
 
 def checkNeighbor(x, y, px, py,up=False,down=False,dir=-1):
     results = []
@@ -89,6 +100,8 @@ def findJumps(board, color):
         x = 0
         for option in options:
             new_piece = None
+            if option.x/62.5 == 0 or option.x/62.5 == 7 or option.y == 0 or option.y == 0:
+                continue
             if dirs[x] == 0:
                 new_piece = board[int(option.x/62.5)+1,int(option.y/62.5)+1]
             elif dirs[x] == 1:
@@ -107,12 +120,86 @@ def findJumps(board, color):
                 new_jumps = findJumps(new_board, color)
                 extra_jump = False
                 for jump in new_jumps:
-                    if jump.checker == piece.checker:
+                    if jump.checker.id == piece.checker.id:
                         extra_jump = True
+                        jump.checker = piece.checker
                         jumps.append(jump)
                 if extra_jump == False:
                     jumps.append(move)
             x += 1
     return jumps
 
+def weighBoard(board):
+    white_moves = findMoves(board, False) + findJumps(board, False)
+    black_moves = findMoves(board, True) + findJumps(board, True)
+    for move in white_moves:
+        if move.type == "Move":
+            move.weight = 0
+        elif move.type == "Jump":
+            move.weight = -100 - move.distance + 1
+
+    for move in black_moves:
+        if move.type == "Move":
+            move.weight = 0
+        elif move.type == "Jump":
+            move.weight = 100 + move.distance - 1
+
+    return (white_moves, black_moves)
+
+def minimax(depth, color, board):
+    white_moves = weighBoard(board)[0]
+    black_moves = weighBoard(board)[1]
+    if depth == 2:
+        if color:
+            # Min
+            min = None
+            for move in white_moves:
+                if min == None:
+                    min = move
+                elif min.weight > move.weight:
+                    min = move
+            return min
+        else:
+            # Max
+            max = None
+            for move in black_moves:
+                if max == None:
+                    max = move
+                elif max.weight < move.weight:
+                    max = move
+            return max
+    if color:
+        # Min
+        max = []
+        for move in white_moves:
+            max.append(minimax(depth+1, False, move.apply(deepcopy(board))))
+
+        min = None
+        x = 0
+        y = 0
+        for move in max:
+            if move.type == "Jump":
+                return move
+            if min == None or min.weight > move.weight:
+                min = move
+                y = x
+            x+=1
+        return white_moves[y]
+    else:
+        # Max
+        min = []
+        for move in black_moves:
+            min.append(minimax(depth+1, True, move.apply(deepcopy(board))))
+
+        max = None
+        x = 0
+        y = 0
+        for move in min:
+            if move.type == "Jump":
+                return move
+            if max == None or max.weight < move.weight:
+                max = move
+                y = x
+            x+=1
+        return black_moves[y]
 

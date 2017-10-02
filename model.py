@@ -1,5 +1,5 @@
 import numpy
-
+import uuid
 class Piece():
     def __init__(self,x,y):
         self.x = x
@@ -14,6 +14,7 @@ class Checker():
         self.piece = None
         self.black = False
         self.circle = None
+        self.id = None
     def moveChecker(self, newPiece):
         self.piece = newPiece
         self.circle.move(newPiece.center[0],newPiece.center[1])
@@ -28,6 +29,7 @@ def addChecker(x, y):
     if y == 3 or y == 4:
         return
     checker = Checker()
+    checker.id = (x,y)
     if y < 4:
         checker.black = True
     checker.piece = board[x,y]
