@@ -57,6 +57,13 @@ for x in range(0, 8):
             addChecker(x, y)
             # print(board)
 
+def King(board):
+    for piece in board.flat:
+        if piece.checker is None:
+            continue
+        if (piece.y/62.5 == 7 and not piece.checker.black) or (piece.y/62.5 == 0 and piece.checker.black):
+            piece.checker.king = True
+
 
 def getFullMove(partial_move):
     moves = ai.findJumps(board, False)

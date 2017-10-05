@@ -84,6 +84,7 @@ def findMoves(board, color):
             continue
         options = []
         for new_piece in board.flat:
+            dirs = []
             if color == True or piece.checker.king:
                 dir = checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True)
             if color == False or piece.checker.king:
@@ -97,7 +98,7 @@ def findMoves(board, color):
     return moves
 
 
-def findJumps(board, color):
+def findJumps(board, color, old=None):
     jumps = []
     for piece in board.flat:
         if piece.checker is None or piece.checker.black != color:
@@ -114,7 +115,6 @@ def findJumps(board, color):
             if dir[0] != -1:
                 options.append(new_piece)
                 dirs.append(dir[0])
-
         x = 0
         for option in options:
             new_piece = None
@@ -136,12 +136,14 @@ def findJumps(board, color):
                 new_board[int(new_piece.x / 62.5), int(new_piece.y / 62.5)].checker = new_board[
                     int(piece.x / 62.5), int(piece.y / 62.5)].checker
                 new_board[int(piece.x / 62.5), int(piece.y / 62.5)].checker = None
-                new_jumps = findJumps(new_board, color)
+                new_jumps = findJumps(new_board, color, option)
                 extra_jump = False
                 for jump in new_jumps:
                     if jump.checker.id == piece.checker.id:
                         extra_jump = True
-                        move.jumped.append(option)
+                        jump.jumped.append(option)
+                        if old is not None:
+                            jump.jumped.append(old)
                         jump.checker = piece.checker
                         jumps.append(jump)
                 if extra_jump == False:
@@ -156,6 +158,8 @@ def weighBoard(board):
     for move in white_moves:
         if doesMoveProtect(board, move, False):
             move.weight = 4
+        elif enemyJump(board, move, False):
+            move.weight = -3
         elif doesMoveKing(board, move, False):
             move.weight = 6
         elif move.type == "Move":
@@ -166,6 +170,8 @@ def weighBoard(board):
     for move in black_moves:
         if doesMoveProtect(board, move, True):
             move.weight = -4
+        elif enemyJump(board, move, True):
+            move.weight = 3
         elif doesMoveKing(board,move, True):
             move.weight = -6
         elif move.type == "Move":
@@ -174,6 +180,14 @@ def weighBoard(board):
             move.weight = -100 - move.distance + 1
 
     return (white_moves, black_moves)
+
+def enemyJump(board, move, color):
+    enemy_jumps = findJumps(board, not color)
+    for jump in enemy_jumps:
+        for victim in jump.jumped:
+            if victim.checker.id == move.checker.id:
+                return True
+    return False
 
 def doesMoveProtect(board, move, color):
     enemy_jumps = findJumps(board, not color)
@@ -219,7 +233,6 @@ def minimax(depth, color, board, h=2):
                 return move
         max = []
         for move in white_moves:
-            print(sys.getrecursionlimit())
             copy = deepcopy(board)
             max.append(minimax(depth + 1, False, move.apply(copy)))
 
@@ -227,12 +240,14 @@ def minimax(depth, color, board, h=2):
         x = 0
         y = 0
         for move in max:
-            if move.type == "Jump":
-                return move
+            if move.type == "Jump" and x < len(black_moves):
+                return black_moves[x]
             if min == None or min.weight > move.weight:
                 min = move
                 y = x
             x += 1
+        if y >= len(black_moves):
+            y = len(black_moves)-1
         return black_moves[y]
     else:
         # Max
@@ -249,4 +264,6 @@ def minimax(depth, color, board, h=2):
                 max = move
                 y = x
             x += 1
+        if y >= len(white_moves):
+            y = len(white_moves)-1
         return white_moves[y]

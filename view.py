@@ -80,6 +80,7 @@ def draw():
     drawCheckers()
     while True:
         sleep(0.01)
+        model.King(model.board)
         click1 = win.getMouse()
         checker = findPiece(click1)
         if checker is None or model.board[int(checker[0]), int(checker[1])].checker is None or model.board[int(checker[0]), int(checker[1])].checker.black:
@@ -96,6 +97,7 @@ def draw():
             partial_move.apply(model.board)
         else:
             move.apply(model.board)
+        model.King(model.board)
         redraw()
         win.update()
         move = runAI()
