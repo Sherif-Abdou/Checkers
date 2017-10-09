@@ -3,11 +3,14 @@ import math
 import graphics
 import view
 from copy import deepcopy, copy
+import copy
 import sys
 
 def takeChecker(x, y, board):
     board[x, y].checker = None
 
+def copyBoard():
+    pass
 
 class Move():
     def __init__(self, checker, piece, type):
@@ -24,10 +27,14 @@ class Move():
         checker_y = self.checker.y
         new_x = self.piece.x / 62.5
         new_y = self.piece.y / 62.5
-        self.checker.x = board[int(new_x), int(new_y)].x/62.5
-        self.checker.y = board[int(new_x), int(new_y)].y/62.5
+        # self.checker.x = board[int(new_x), int(new_y)].x / 62.5
+        # self.checker.y = board[int(new_x), int(new_y)].y / 62.5
         board[int(checker_x), int(checker_y)].checker = None
-        board[int(new_x), int(new_y)].checker = self.checker
+        board[int(new_x), int(new_y)].checker = deepcopy(self.checker)
+        board[int(new_x), int(new_y)].checker.x = board[int(new_x), int(new_y)].x/62.5
+        board[int(new_x), int(new_y)].checker.y = board[int(new_x), int(new_y)].y/62.5
+        # board[int(new_x), int(new_y)].checker.x = board[int(new_x), int(new_y)].x / 62.5
+        # board[int(new_x), int(new_y)].checker.y = board[int(new_x), int(new_y)].y / 62.5
 
         for piece in self.jumped:
             # board[int(piece.x / 62.5), int(piece.y / 62.5)].checker.circle.undraw()
@@ -98,7 +105,7 @@ def findMoves(board, color):
     return moves
 
 
-def findJumps(board, color, old=None):
+def findJumps(board, color, old=None, depth=0):
     jumps = []
     for piece in board.flat:
         if piece.checker is None or piece.checker.black != color:
@@ -132,22 +139,21 @@ def findJumps(board, color, old=None):
             if new_piece.checker == None:
                 move = Move(piece.checker, new_piece, "Jump")
                 move.jumped.append(option)
-                new_board = deepcopy(board)
-                new_board[int(new_piece.x / 62.5), int(new_piece.y / 62.5)].checker = new_board[
-                    int(piece.x / 62.5), int(piece.y / 62.5)].checker
-                new_board[int(piece.x / 62.5), int(piece.y / 62.5)].checker = None
-                new_jumps = findJumps(new_board, color, option)
-                extra_jump = False
-                for jump in new_jumps:
-                    if jump.checker.id == piece.checker.id:
-                        extra_jump = True
-                        jump.jumped.append(option)
-                        if old is not None:
-                            jump.jumped.append(old)
-                        jump.checker = piece.checker
-                        jumps.append(jump)
-                if extra_jump == False:
-                    jumps.append(move)
+                new_board = model.copyBoard(board)
+                move.apply(new_board)
+                if depth < 2:
+                    new_jumps = findJumps(new_board, color, option, depth+1)
+                    extra_jump = False
+                    for jump in new_jumps:
+                        if jump.checker.id == piece.checker.id:
+                            extra_jump = True
+                            jump.jumped.append(option)
+                            if old is not None:
+                                jump.jumped.append(old)
+                            jump.checker = piece.checker
+                            jumps.append(jump)
+                    if extra_jump == False:
+                        jumps.append(move)
             x += 1
     return jumps
 
@@ -211,7 +217,7 @@ def minimax(depth, color, board, h=2):
         if color:
             # Min
             min = None
-            for move in white_moves:
+            for move in black_moves:
                 if min == None:
                     min = move
                 elif min.weight > move.weight:
@@ -220,50 +226,58 @@ def minimax(depth, color, board, h=2):
         else:
             # Max
             max = None
-            for move in black_moves:
+            for move in white_moves:
                 if max == None:
                     max = move
                 elif max.weight < move.weight:
                     max = move
             return max
+    best_move = None
     if color:
         # Min
         for move in black_moves:
             if move.type == "Jump":
                 return move
-        max = []
-        for move in white_moves:
-            copy = deepcopy(board)
-            max.append(minimax(depth + 1, False, move.apply(copy)))
+        # max = []
+        for move in black_moves:
+            copy = model.copyBoard(board)
+            val = minimax(depth + 1, False, move.apply(copy))
+            if best_move == None or val.weight < best_move.weight:
+                best_move = val
 
-        min = None
-        x = 0
-        y = 0
-        for move in max:
-            if move.type == "Jump" and x < len(black_moves):
-                return black_moves[x]
-            if min == None or min.weight > move.weight:
-                min = move
-                y = x
-            x += 1
-        if y >= len(black_moves):
-            y = len(black_moves)-1
-        return black_moves[y]
+        # min = None
+        # x = 0
+        # y = 0
+        # for move in max:
+        #     if move.type == "Jump" and x < len(black_moves):
+        #         return black_moves[x]
+        #     if min == None or min.weight > move.weight:
+        #         min = move
+        #         y = x
+        #     x += 1
+        # if y >= len(black_moves):
+        #     y = len(black_moves)-1
+        # return black_moves[y]
     else:
         # Max
-        min = []
-        for move in black_moves:
-            min.append(minimax(depth + 1, True, move.apply(deepcopy(board))))
-        max = None
-        x = 0
-        y = 0
-        for move in min:
-            if move.type == "Jump":
-                return move
-            if max == None or max.weight < move.weight:
-                max = move
-                y = x
-            x += 1
-        if y >= len(white_moves):
-            y = len(white_moves)-1
-        return white_moves[y]
+        # for move in white_moves:
+        #     if move.type == "Jump":
+        #         return move
+        for move in white_moves:
+            val = minimax(depth + 1, True, move.apply(model.copyBoard(board)))
+            if best_move == None or val.weight > best_move.weight:
+                best_move = val
+        # max = None
+        # x = 0
+        # y = 0
+        # for move in min:
+        #     if move.type == "Jump":
+        #         return move
+        #     if max == None or max.weight < move.weight:
+        #         max = move
+        #         y = x
+        #     x += 1
+        # if y >= len(white_moves):
+        #     y = len(white_moves)-1
+        # return white_moves[y]
+    return best_move

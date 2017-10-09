@@ -58,7 +58,6 @@ def findPiece(click):
 
 
 
-testboard = deepcopy(model.board)
 
 
 def redraw():

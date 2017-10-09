@@ -1,5 +1,5 @@
 import numpy
-import uuid
+import copy
 import ai
 
 class Piece():
@@ -9,7 +9,12 @@ class Piece():
         self.center = [x + 25, y + 25]
         self.checker = None
 
-
+def copyBoard(origin):
+    new_board = copy.deepcopy(origin)
+    for piece in board.flat:
+        new_board[int(piece.x/62.5),int(piece.y/62.5)] = copy.deepcopy(piece)
+        new_board[int(piece.x / 62.5), int(piece.y / 62.5)].checker = copy.deepcopy(piece.checker)
+    return new_board
 class Checker():
     def __init__(self):
         self.alive = True
@@ -61,7 +66,7 @@ def King(board):
     for piece in board.flat:
         if piece.checker is None:
             continue
-        if (piece.y/62.5 == 7 and not piece.checker.black) or (piece.y/62.5 == 0 and piece.checker.black):
+        if (piece.y/62.5 == 7 and piece.checker.black) or (piece.y/62.5 == 0 and not piece.checker.black):
             piece.checker.king = True
 
 
