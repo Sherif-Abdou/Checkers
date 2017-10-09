@@ -93,11 +93,12 @@ def findMoves(board, color):
         for new_piece in board.flat:
             dirs = []
             if color == True or piece.checker.king:
-                dir = checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True)
+                dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True))
             if color == False or piece.checker.king:
-                dir = checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True)
-            if dir[0] != -1:
-                options.append(new_piece)
+                dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True))
+            for direction in dirs:
+                if direction[0] != -1:
+                    options.append(new_piece)
 
         for option in options:
             if option.checker == None:
@@ -113,15 +114,17 @@ def findJumps(board, color, old=None, depth=0):
         options = []
         dirs = []
         for new_piece in board.flat:
+            dir = []
             if new_piece.checker is None or new_piece.checker.black == color:
                 continue
             if color == True or piece.checker.king:
-                dir = checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True)
+                dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True))
             if color == False or piece.checker.king:
-                dir = checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True)
-            if dir[0] != -1:
-                options.append(new_piece)
-                dirs.append(dir[0])
+                dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True))
+            for direction in dir:
+                if direction[0] != -1:
+                    options.append(new_piece)
+                    dirs.append(direction[0])
         x = 0
         for option in options:
             new_piece = None
@@ -166,6 +169,8 @@ def weighBoard(board):
             move.weight = 4
         elif enemyJump(board, move, False):
             move.weight = -3
+        elif doesMoveEscape(board, move, False):
+            move.weight = 3
         elif doesMoveKing(board, move, False):
             move.weight = 6
         elif move.type == "Move":
@@ -178,6 +183,8 @@ def weighBoard(board):
             move.weight = -4
         elif enemyJump(board, move, True):
             move.weight = 3
+        elif doesMoveEscape(board, move, True):
+            move.weight = -3
         elif doesMoveKing(board,move, True):
             move.weight = -6
         elif move.type == "Move":
@@ -188,7 +195,7 @@ def weighBoard(board):
     return (white_moves, black_moves)
 
 def enemyJump(board, move, color):
-    enemy_jumps = findJumps(board, not color)
+    enemy_jumps = findJumps(move.apply(model.copyBoard(board)), not color)
     for jump in enemy_jumps:
         for victim in jump.jumped:
             if victim.checker.id == move.checker.id:
@@ -209,10 +216,19 @@ def doesMoveKing(board, move, color):
     elif not color:
         if move.piece.x/62.5 == 0:
             return True
+def doesMoveEscape(board, move, color):
+    enemy_jumps = findJumps(board, not color)
+    for jump in enemy_jumps:
+        for victim in jump.jumped:
+            if victim.x/62.5 == move.checker.x and victim.y/62.5 == move.checker.y:
+                return True
+    return False
 
 def minimax(depth, color, board, h=2):
-    white_moves = weighBoard(board)[0]
-    black_moves = weighBoard(board)[1]
+    if color:
+        black_moves = weighBoard(board)[1]
+    elif not color:
+        white_moves = weighBoard(board)[0]
     if depth == h:
         if color:
             # Min
