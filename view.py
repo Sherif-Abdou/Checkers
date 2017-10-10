@@ -2,7 +2,6 @@ import graphics
 from graphics import Point
 import model
 from time import sleep
-from copy import deepcopy
 import ai
 width = 500
 height = 500
@@ -32,19 +31,11 @@ def drawCheckers():
     for piece in model.board.flat:
         if piece.checker != None:
             circle = graphics.Circle(Point(piece.center[0], piece.center[1]), 15)
-            # print(piece.center[0], piece.center[1])
             if piece.checker.black == True:
                 circle.setFill("Black")
             else:
                 circle.setFill("White")
-            #piece.checker.circle = circle
             circle.draw(win)
-
-
-def checkMove():
-    if win.getMouse() != None:
-        for checker in model.checkers:
-            pass
 
 
 def findPiece(click):
@@ -53,7 +44,7 @@ def findPiece(click):
     for x in range(0,8):
         for y in range(0,8):
             if (click_x > x and click_y > y) and (click_x < x+1 and click_y < y+1):
-                return (x,y)
+                return (x ,y)
     return None
 
 
@@ -91,6 +82,7 @@ def draw():
         partial_move = ai.Move(model.board[int(checker[0]), int(checker[1])].checker, model.board[int(piece[0]), int(piece[1])],"?")
         partial_move.checker.x = checker[0]
         partial_move.checker.y = checker[1]
+        #TODO: Add move validation
         move = model.getFullMove(partial_move)
         if move is None:
             partial_move.apply(model.board)

@@ -1,16 +1,9 @@
 import model
-import math
-import graphics
-import view
 from copy import deepcopy, copy
-import copy
-import sys
+
 
 def takeChecker(x, y, board):
     board[x, y].checker = None
-
-def copyBoard():
-    pass
 
 class Move():
     def __init__(self, checker, piece, type):
@@ -160,7 +153,7 @@ def findJumps(board, color, old=None, depth=0):
             x += 1
     return jumps
 
-
+# Weighs a board based different types of available moves
 def weighBoard(board):
     white_moves = findMoves(board, False) + findJumps(board, False)
     black_moves = findMoves(board, True) + findJumps(board, True)
@@ -194,6 +187,9 @@ def weighBoard(board):
 
     return (white_moves, black_moves)
 
+# Checks if a move is a suicide run for a checker
+# Improves AI significantly
+
 def enemyJump(board, move, color):
     enemy_jumps = findJumps(move.apply(model.copyBoard(board)), not color)
     for jump in enemy_jumps:
@@ -202,6 +198,7 @@ def enemyJump(board, move, color):
                 return True
     return False
 
+# Checks if move is protecting a checker
 def doesMoveProtect(board, move, color):
     enemy_jumps = findJumps(board, not color)
     for jump in enemy_jumps:
@@ -209,6 +206,7 @@ def doesMoveProtect(board, move, color):
                 return True
     return False
 
+# Checks if a move kings the checker
 def doesMoveKing(board, move, color):
     if color:
         if move.piece.x/62.5 == 7:
@@ -216,6 +214,8 @@ def doesMoveKing(board, move, color):
     elif not color:
         if move.piece.x/62.5 == 0:
             return True
+
+# Checks if a move would cause an enemy jump
 def doesMoveEscape(board, move, color):
     enemy_jumps = findJumps(board, not color)
     for jump in enemy_jumps:
@@ -232,6 +232,7 @@ def minimax(depth, color, board, h=2):
     if depth == h:
         if color:
             # Min
+            # Returns move best for black
             min = None
             for move in black_moves:
                 if min == None:
@@ -241,6 +242,7 @@ def minimax(depth, color, board, h=2):
             return min
         else:
             # Max
+            # Returns move best for white
             max = None
             for move in white_moves:
                 if max == None:
@@ -248,52 +250,26 @@ def minimax(depth, color, board, h=2):
                 elif max.weight < move.weight:
                     max = move
             return max
+
     best_move = None
     if color:
         # Min
         for move in black_moves:
             if move.type == "Jump":
+                # The Ai has to jump
                 return move
-        # max = []
+
+        # Evaluates future impact of moves and ranks them accordingly
         for move in black_moves:
             copy = model.copyBoard(board)
             val = minimax(depth + 1, False, move.apply(copy))
             if best_move == None or val.weight < best_move.weight:
                 best_move = val
 
-        # min = None
-        # x = 0
-        # y = 0
-        # for move in max:
-        #     if move.type == "Jump" and x < len(black_moves):
-        #         return black_moves[x]
-        #     if min == None or min.weight > move.weight:
-        #         min = move
-        #         y = x
-        #     x += 1
-        # if y >= len(black_moves):
-        #     y = len(black_moves)-1
-        # return black_moves[y]
     else:
-        # Max
-        # for move in white_moves:
-        #     if move.type == "Jump":
-        #         return move
+        # Evaluates future impact of moves and ranks them accordingly
         for move in white_moves:
             val = minimax(depth + 1, True, move.apply(model.copyBoard(board)))
             if best_move == None or val.weight > best_move.weight:
                 best_move = val
-        # max = None
-        # x = 0
-        # y = 0
-        # for move in min:
-        #     if move.type == "Jump":
-        #         return move
-        #     if max == None or max.weight < move.weight:
-        #         max = move
-        #         y = x
-        #     x += 1
-        # if y >= len(white_moves):
-        #     y = len(white_moves)-1
-        # return white_moves[y]
     return best_move

@@ -2,6 +2,7 @@ import numpy
 import copy
 import ai
 
+# The board's pieces
 class Piece():
     def __init__(self, x, y):
         self.x = x
@@ -9,12 +10,15 @@ class Piece():
         self.center = [x + 25, y + 25]
         self.checker = None
 
+# Completely copies board for minimax
 def copyBoard(origin):
     new_board = copy.deepcopy(origin)
     for piece in board.flat:
         new_board[int(piece.x/62.5),int(piece.y/62.5)] = copy.deepcopy(piece)
         new_board[int(piece.x / 62.5), int(piece.y / 62.5)].checker = copy.deepcopy(piece.checker)
     return new_board
+
+# A checker on the board
 class Checker():
     def __init__(self):
         self.alive = True
