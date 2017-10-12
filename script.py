@@ -1,4 +1,5 @@
 import view
 
 #TODO: Add Explanations
-view.draw()
+while True:
+    view.draw()

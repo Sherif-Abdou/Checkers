@@ -82,3 +82,13 @@ def getFullMove(partial_move):
                 and move.piece.y == partial_move.piece.y:
             return move
     return None
+
+def hasWon(board):
+    white_actions = ai.findJumps(board, False) + ai.findMoves(board, False)
+    black_actions = ai.findJumps(board, True) + ai.findMoves(board, True)
+    if len(white_actions) == 0:
+        return -1
+    elif len(black_actions) == 0:
+        return 1
+    else:
+        return 0

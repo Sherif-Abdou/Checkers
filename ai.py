@@ -89,6 +89,7 @@ def findMoves(board, color):
                 moves.append(Move(piece.checker, option, "Move"))
     return moves
 
+
 # Finds Jumps that a side can make
 def findJumps(board, color, old=None, depth=0):
     jumps = []
@@ -143,6 +144,7 @@ def findJumps(board, color, old=None, depth=0):
                         jumps.append(move)
             x += 1
     return jumps
+
 
 # Weighs a board based different types of available moves
 def weighBoard(board):

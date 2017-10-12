@@ -68,7 +68,7 @@ def runAI():
 def draw():
     drawBoard()
     drawCheckers()
-    while True:
+    while model.hasWon(model.board) == 0:
         sleep(0.01)
         model.King(model.board)
         click1 = win.getMouse()
@@ -92,5 +92,18 @@ def draw():
         redraw()
         win.update()
         move = runAI()
+    winWindow = graphics.GraphWin("Game over")
+    if model.hasWon(model.board) == 1:
+        text = graphics.Text()
+        text.setText("You Won!!")
+        text.draw(winWindow)
+        win.close()
+    elif model.hasWon(model.board) == -1:
+        text = graphics.Text()
+        text.setText("You Lost")
+        text.draw(winWindow)
+        win.close()
+
+
 
 
