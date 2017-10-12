@@ -34,6 +34,7 @@ def moveChecker(checker, piece):
     piece.checker = checker
     checker.circle.move(piece.center[0], piece.center[1])
 
+# The main board of the game
 board = numpy.empty((8, 8), dtype=Piece)
 checkers = []
 piece_offset = False
@@ -51,7 +52,7 @@ def addChecker(x, y):
     board[x, y].checker = checker
     checkers.append(checker)
 
-
+# Initializes the board
 for x in range(0, 8):
     if x % 2 == 1:
         piece_offset = True

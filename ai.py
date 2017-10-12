@@ -1,9 +1,10 @@
 import model
-from copy import deepcopy, copy
+from copy import deepcopy
 
 
 def takeChecker(x, y, board):
     board[x, y].checker = None
+
 
 class Move():
     def __init__(self, checker, piece, type):
@@ -12,35 +13,25 @@ class Move():
         self.type = type
         self.distance = 1
         self.weight = None
-        self.origon = None
         self.jumped = []
 
+    # Applies a move to a given board
     def apply(self, board):
         checker_x = self.checker.x
         checker_y = self.checker.y
         new_x = self.piece.x / 62.5
         new_y = self.piece.y / 62.5
-        # self.checker.x = board[int(new_x), int(new_y)].x / 62.5
-        # self.checker.y = board[int(new_x), int(new_y)].y / 62.5
         board[int(checker_x), int(checker_y)].checker = None
         board[int(new_x), int(new_y)].checker = deepcopy(self.checker)
         board[int(new_x), int(new_y)].checker.x = board[int(new_x), int(new_y)].x/62.5
         board[int(new_x), int(new_y)].checker.y = board[int(new_x), int(new_y)].y/62.5
-        # board[int(new_x), int(new_y)].checker.x = board[int(new_x), int(new_y)].x / 62.5
-        # board[int(new_x), int(new_y)].checker.y = board[int(new_x), int(new_y)].y / 62.5
 
         for piece in self.jumped:
-            # board[int(piece.x / 62.5), int(piece.y / 62.5)].checker.circle.undraw()
             board[int(piece.x/62.5),int(piece.y/62.5)].checker = None
-        # self.checker.circle = graphics.Circle(graphics.Point(self.piece.center[0],self.piece.center[1]), 15)
-        # if self.checker.black:
-        #     self.checker.circle.setFill("Black")
-        # elif not self.checker.black:
-        #     self.checker.circle.setFill("White")
-        # self.checker.circle.draw(view.win)
         return board
 
 
+# checks if 2 sets of piece positions are cornering each other
 def checkNeighbor(x, y, px, py, up=False, down=False, dir=-1):
     results = []
     if up == False:
@@ -76,7 +67,7 @@ def checkNeighbor(x, y, px, py, up=False, down=False, dir=-1):
         results.append(-1)
     return results
 
-
+# Finds the one-step moves a side can make
 def findMoves(board, color):
     moves = []
     for piece in board.flat:
@@ -98,7 +89,7 @@ def findMoves(board, color):
                 moves.append(Move(piece.checker, option, "Move"))
     return moves
 
-
+# Finds Jumps that a side can make
 def findJumps(board, color, old=None, depth=0):
     jumps = []
     for piece in board.flat:
@@ -187,9 +178,9 @@ def weighBoard(board):
 
     return (white_moves, black_moves)
 
+
 # Checks if a move is a suicide run for a checker
 # Improves AI significantly
-
 def enemyJump(board, move, color):
     enemy_jumps = findJumps(move.apply(model.copyBoard(board)), not color)
     for jump in enemy_jumps:
@@ -197,6 +188,7 @@ def enemyJump(board, move, color):
             if victim.checker.id == move.checker.id:
                 return True
     return False
+
 
 # Checks if move is protecting a checker
 def doesMoveProtect(board, move, color):
@@ -224,6 +216,7 @@ def doesMoveEscape(board, move, color):
                 return True
     return False
 
+# Does the work of computing what move to do next
 def minimax(depth, color, board, h=2):
     if color:
         black_moves = weighBoard(board)[1]

@@ -1,7 +1,5 @@
 import ai
 import model
-import math
-import uuid
 import view
 from copy import deepcopy
 
