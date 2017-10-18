@@ -27,14 +27,29 @@ class Move():
         board[int(new_x), int(new_y)].checker.y = board[int(new_x), int(new_y)].y/62.5
 
         for piece in self.jumped:
-            board[int(piece.x/62.5),int(piece.y/62.5)].checker = None
+            board[int(piece.x/62.5), int(piece.y/62.5)].checker = None
         return board
+
+
+def findNeighbor(board, x, y, up=False, down=False):
+    neighbors = []
+    if not up:
+        if x != 7 and y != 7:
+            neighbors.append(board[int(x+1), int(y+1)])
+        if x != 0 and y != 7:
+            neighbors.append(board[int(x-1), int(y+1)])
+    if not down:
+        if x != 7 and y != 0:
+            neighbors.append(board[int(x+1), int(y-1)])
+        if x != 0 and y != 0:
+            neighbors.append(board[int(x-1), int(y-1)])
+    return neighbors
 
 
 # checks if 2 sets of piece positions are cornering each other
 def checkNeighbor(x, y, px, py, up=False, down=False, dir=-1):
     results = []
-    if up == False:
+    if not up:
         if (x == px + 1 and y == py + 1):
             # South_West
             results.append(0)
@@ -67,6 +82,7 @@ def checkNeighbor(x, y, px, py, up=False, down=False, dir=-1):
         results.append(-1)
     return results
 
+
 # Finds the one-step moves a side can make
 def findMoves(board, color):
     moves = []
@@ -74,11 +90,17 @@ def findMoves(board, color):
         if piece.checker is None or piece.checker.black != color:
             continue
         options = []
+        if piece.checker.king:
+            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5)
+        elif color:
+            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5, down=True)
+        elif not color:
+            pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5, up=True)
         for new_piece in board.flat:
             dirs = []
-            if color == True or piece.checker.king:
+            if color is True or piece.checker.king:
                 dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True))
-            if color == False or piece.checker.king:
+            if color is False or piece.checker.king:
                 dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True))
             for direction in dirs:
                 if direction[0] != -1:
@@ -98,13 +120,19 @@ def findJumps(board, color, old=None, depth=0):
             continue
         options = []
         dirs = []
+        if piece.checker.king:
+            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5)
+        elif color:
+            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5, down=True)
+        elif not color:
+            pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5, up=True)
         for new_piece in board.flat:
             dir = []
             if new_piece.checker is None or new_piece.checker.black == color:
                 continue
-            if color == True or piece.checker.king:
+            if color is True or piece.checker.king:
                 dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True))
-            if color == False or piece.checker.king:
+            if color is False or piece.checker.king:
                 dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True))
             for direction in dir:
                 if direction[0] != -1:
@@ -171,7 +199,7 @@ def weighBoard(board):
             move.weight = 3
         elif doesMoveEscape(board, move, True):
             move.weight = -3
-        elif doesMoveKing(board,move, True):
+        elif doesMoveKing(board, move, True):
             move.weight = -6
         elif move.type == "Move":
             move.weight = 0
@@ -200,6 +228,7 @@ def doesMoveProtect(board, move, color):
                 return True
     return False
 
+
 # Checks if a move kings the checker
 def doesMoveKing(board, move, color):
     if color:
@@ -217,6 +246,9 @@ def doesMoveEscape(board, move, color):
             if victim.x/62.5 == move.checker.x and victim.y/62.5 == move.checker.y:
                 return True
     return False
+
+def runAway(board):
+    pass
 
 # Does the work of computing what move to do next
 def minimax(depth, color, board, h=2):

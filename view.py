@@ -8,6 +8,8 @@ height = 500
 offset_x = width / 8
 offset_y = height / 8
 win = graphics.GraphWin("Checkers", width, height)
+
+
 def drawBoard():
     color_offset = False
     for x in range(0, 8):
@@ -29,9 +31,9 @@ def drawBoard():
 
 def drawCheckers():
     for piece in model.board.flat:
-        if piece.checker != None:
+        if piece.checker is not None:
             circle = graphics.Circle(Point(piece.center[0], piece.center[1]), 15)
-            if piece.checker.black == True:
+            if piece.checker.black:
                 circle.setFill("Black")
             else:
                 circle.setFill("White")
@@ -41,10 +43,10 @@ def drawCheckers():
 def findPiece(click):
     click_x = click.x/62.5
     click_y = click.y/62.5
-    for x in range(0,8):
-        for y in range(0,8):
+    for x in range(0, 8):
+        for y in range(0, 8):
             if (click_x > x and click_y > y) and (click_x < x+1 and click_y < y+1):
-                return (x ,y)
+                return (x, y)
     return None
 
 
@@ -82,27 +84,23 @@ def draw():
         partial_move = ai.Move(model.board[int(checker[0]), int(checker[1])].checker, model.board[int(piece[0]), int(piece[1])],"?")
         partial_move.checker.x = checker[0]
         partial_move.checker.y = checker[1]
-        #TODO: Add move validation
+        # TODO: Add move validation
         move = model.getFullMove(partial_move)
         if move is None:
-            partial_move.apply(model.board)
+            continue
         else:
             move.apply(model.board)
         model.King(model.board)
         redraw()
         win.update()
-        move = runAI()
+        runAI()
     winWindow = graphics.GraphWin("Game over")
     if model.hasWon(model.board) == 1:
-        text = graphics.Text()
-        text.setText("You Won!!")
+        text = graphics.Text(Point(winWindow.width/2, winWindow.height/2), "You Won!!")
         text.draw(winWindow)
-        win.close()
     elif model.hasWon(model.board) == -1:
-        text = graphics.Text()
-        text.setText("You Lost")
+        text = graphics.Text(Point(winWindow.width / 2, winWindow.height / 2), "You Lost :(")
         text.draw(winWindow)
-        win.close()
 
 
 

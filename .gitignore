@@ -1,2 +1,4 @@
 .vscode
 .idea
+view.pyc
+__pycache__

@@ -66,7 +66,6 @@ for x in range(0, 8):
         elif (x % 2 == 1 or y % 2 == 1) and (piece_offset == False):
             addChecker(x, y)
             # print(board)
-
 def King(board):
     for piece in board.flat:
         if piece.checker is None or piece.checker.king:
@@ -76,7 +75,7 @@ def King(board):
 
 
 def getFullMove(partial_move):
-    moves = ai.findJumps(board, False)
+    moves = ai.findJumps(board, False) + ai.findMoves(board, False)
     for move in moves:
         if move.checker.id == partial_move.checker.id and move.piece.x == partial_move.piece.x \
                 and move.piece.y == partial_move.piece.y:
