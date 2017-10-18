@@ -7,10 +7,10 @@ def takeChecker(x, y, board):
 
 
 class Move():
-    def __init__(self, checker, piece, type):
+    def __init__(self, checker, piece, variant):
         self.checker = checker
         self.piece = piece
-        self.type = type
+        self.type = variant
         self.distance = 1
         self.weight = None
         self.jumped = []
@@ -145,13 +145,16 @@ def findJumps(board, color, old=None, depth=0):
                 continue
             if dirs[x] == 0:
                 new_piece = board[int(option.x / 62.5) + 1, int(option.y / 62.5) + 1]
+                x += 1
             elif dirs[x] == 1:
                 new_piece = board[int(option.x / 62.5 - 1), int(option.y / 62.5 + 1)]
+                x += 1
             elif dirs[x] == 2:
                 new_piece = board[int(option.x / 62.5 + 1), int(option.y / 62.5 - 1)]
+                x += 1
             elif dirs[x] == 3:
                 new_piece = board[int(option.x / 62.5 - 1), int(option.y / 62.5 - 1)]
-
+                x += 1
             if new_piece.checker == None:
                 move = Move(piece.checker, new_piece, "Jump")
                 move.jumped.append(option)
@@ -170,9 +173,16 @@ def findJumps(board, color, old=None, depth=0):
                             jumps.append(jump)
                     if extra_jump == False:
                         jumps.append(move)
-            x += 1
     return jumps
 
+
+def distanceToKing(y, color):
+    dif = None
+    if color:
+        dif = 7 - y
+    elif not color:
+        dif = y
+    return dif
 
 # Weighs a board based different types of available moves
 def weighBoard(board):
@@ -247,11 +257,9 @@ def doesMoveEscape(board, move, color):
                 return True
     return False
 
-def runAway(board):
-    pass
 
 # Does the work of computing what move to do next
-def minimax(depth, color, board, h=2):
+def minimax(depth, color, board, a, b, h=2):
     if color:
         black_moves = weighBoard(board)[1]
     elif not color:
@@ -260,23 +268,29 @@ def minimax(depth, color, board, h=2):
         if color:
             # Min
             # Returns move best for black
-            min = None
+            mini = None
             for move in black_moves:
-                if min == None:
-                    min = move
-                elif min.weight > move.weight:
-                    min = move
-            return min
+                if mini is None:
+                    mini = move
+                elif mini.weight > move.weight:
+                    mini = move
+                b = min(b, mini.weight)
+                if b <= a:
+                    break
+            return mini
         else:
             # Max
             # Returns move best for white
-            max = None
+            maxi = None
             for move in white_moves:
-                if max == None:
-                    max = move
-                elif max.weight < move.weight:
-                    max = move
-            return max
+                if maxi is None:
+                    maxi = move
+                elif maxi.weight < move.weight:
+                    maxi = move
+                a = max(a, best_move.weight)
+                if b <= a:
+                    break
+            return maxi
 
     best_move = None
     if color:
@@ -289,14 +303,20 @@ def minimax(depth, color, board, h=2):
         # Evaluates future impact of moves and ranks them accordingly
         for move in black_moves:
             copy = model.copyBoard(board)
-            val = minimax(depth + 1, False, move.apply(copy))
-            if best_move == None or val.weight < best_move.weight:
+            val = minimax(depth + 1, False, move.apply(copy), a, b)
+            if best_move is None or val.weight < best_move.weight:
                 best_move = val
+            b = min(b, best_move.weight)
+            if b <= a:
+                break
 
     else:
         # Evaluates future impact of moves and ranks them accordingly
         for move in white_moves:
-            val = minimax(depth + 1, True, move.apply(model.copyBoard(board)))
-            if best_move == None or val.weight > best_move.weight:
+            val = minimax(depth + 1, True, move.apply(model.copyBoard(board)), a, b)
+            if best_move is None or val.weight > best_move.weight:
                 best_move = val
+            a = max(a, best_move.weight)
+            if b <= a:
+                break
     return best_move

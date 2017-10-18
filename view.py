@@ -61,7 +61,7 @@ def redraw():
 
 
 def runAI():
-    ai_move = ai.minimax(0, True, model.board)
+    ai_move = ai.minimax(0, True, model.board, float("-inf"), float("inf"))
     ai_move.apply(model.board)
     redraw()
     return ai_move
