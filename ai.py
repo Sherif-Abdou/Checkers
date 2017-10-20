@@ -96,7 +96,7 @@ def findMoves(board, color):
             pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5, down=True)
         elif not color:
             pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5, up=True)
-        for new_piece in board.flat:
+        for new_piece in pieces:
             dirs = []
             if color is True or piece.checker.king:
                 dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True))
@@ -126,7 +126,7 @@ def findJumps(board, color, old=None, depth=0):
             pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5, down=True)
         elif not color:
             pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5, up=True)
-        for new_piece in board.flat:
+        for new_piece in pieces:
             dir = []
             if new_piece.checker is None or new_piece.checker.black == color:
                 continue
@@ -142,6 +142,7 @@ def findJumps(board, color, old=None, depth=0):
         for option in options:
             new_piece = None
             if option.x / 62.5 == 0 or option.x / 62.5 == 7 or option.y/62.5 == 0 or option.y/62.5 == 7:
+                x+=1
                 continue
             if dirs[x] == 0:
                 new_piece = board[int(option.x / 62.5) + 1, int(option.y / 62.5) + 1]
@@ -287,7 +288,7 @@ def minimax(depth, color, board, a, b, h=2):
                     maxi = move
                 elif maxi.weight < move.weight:
                     maxi = move
-                a = max(a, best_move.weight)
+                a = max(a, maxi.weight)
                 if b <= a:
                     break
             return maxi

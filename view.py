@@ -101,6 +101,7 @@ def draw():
     elif model.hasWon(model.board) == -1:
         text = graphics.Text(Point(winWindow.width / 2, winWindow.height / 2), "You Lost :(")
         text.draw(winWindow)
+    return
 
 
 

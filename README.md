@@ -1,3 +1,3 @@
-Checkers AI
+# Checkers AI
 
 A checkers ai that plays against a human. Includes GUI for the game

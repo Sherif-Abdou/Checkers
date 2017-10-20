@@ -1,4 +1,3 @@
 import view
 
-while True:
-    view.draw()
+view.draw()
