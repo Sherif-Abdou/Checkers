@@ -3,6 +3,9 @@ from graphics import Point
 import model
 from time import sleep
 import ai
+import time
+
+
 width = 500
 height = 500
 offset_x = width / 8
@@ -61,13 +64,27 @@ def redraw():
 
 
 def runAI():
+    t1 = time.time()
     ai_move = ai.minimax(0, True, model.board, float("-inf"), float("inf"))
+    t2 = time.time()
+    print(t2-t1)
     ai_move.apply(model.board)
     redraw()
     return ai_move
 
 
+def chooseDif():
+    difwin = graphics.GraphWin("Choose Difficulty")
+    difwin.focus()
+    entry = graphics.Entry(Point(100, 100), 20)
+    entry.setText("2")
+    entry.draw(difwin)
+    difwin.getMouse()
+    ai.setDifficulty(int(entry.getText()))
+    difwin.close()
+
 def draw():
+    # chooseDif()
     drawBoard()
     drawCheckers()
     while model.hasWon(model.board) == 0:
@@ -98,9 +115,11 @@ def draw():
     if model.hasWon(model.board) == 1:
         text = graphics.Text(Point(winWindow.width/2, winWindow.height/2), "You Won!!")
         text.draw(winWindow)
+        sleep(3)
     elif model.hasWon(model.board) == -1:
         text = graphics.Text(Point(winWindow.width / 2, winWindow.height / 2), "You Lost :(")
         text.draw(winWindow)
+        sleep(3)
     return
 
 

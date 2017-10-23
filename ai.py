@@ -5,6 +5,9 @@ from copy import deepcopy
 def takeChecker(x, y, board):
     board[x, y].checker = None
 
+DIFFICULTY = 2
+def setDifficulty(val):
+    DIFFICULTY = val
 
 class Move():
     def __init__(self, checker, piece, variant):
@@ -156,11 +159,12 @@ def findJumps(board, color, old=None, depth=0):
             elif dirs[x] == 3:
                 new_piece = board[int(option.x / 62.5 - 1), int(option.y / 62.5 - 1)]
                 x += 1
-            if new_piece.checker == None:
+            if new_piece.checker is None:
                 move = Move(piece.checker, new_piece, "Jump")
                 move.jumped.append(option)
                 new_board = model.copyBoard(board)
                 move.apply(new_board)
+                
                 if depth < 2:
                     new_jumps = findJumps(new_board, color, option, depth+1)
                     extra_jump = False
@@ -172,7 +176,7 @@ def findJumps(board, color, old=None, depth=0):
                                 jump.jumped.append(old)
                             jump.checker = piece.checker
                             jumps.append(jump)
-                    if extra_jump == False:
+                    if not extra_jump:
                         jumps.append(move)
     return jumps
 
@@ -260,12 +264,12 @@ def doesMoveEscape(board, move, color):
 
 
 # Does the work of computing what move to do next
-def minimax(depth, color, board, a, b, h=2):
+def minimax(depth, color, board, a, b):
     if color:
         black_moves = weighBoard(board)[1]
     elif not color:
         white_moves = weighBoard(board)[0]
-    if depth == h:
+    if depth == DIFFICULTY:
         if color:
             # Min
             # Returns move best for black
