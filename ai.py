@@ -5,9 +5,13 @@ from copy import deepcopy
 def takeChecker(x, y, board):
     board[x, y].checker = None
 
-DIFFICULTY = 2
+
+DIFFICULTY = 3
+
+
 def setDifficulty(val):
     DIFFICULTY = val
+
 
 class Move():
     def __init__(self, checker, piece, variant):
@@ -26,11 +30,13 @@ class Move():
         new_y = self.piece.y / 62.5
         board[int(checker_x), int(checker_y)].checker = None
         board[int(new_x), int(new_y)].checker = deepcopy(self.checker)
-        board[int(new_x), int(new_y)].checker.x = board[int(new_x), int(new_y)].x/62.5
-        board[int(new_x), int(new_y)].checker.y = board[int(new_x), int(new_y)].y/62.5
+        board[int(new_x), int(new_y)].checker.x = board[int(
+            new_x), int(new_y)].x / 62.5
+        board[int(new_x), int(new_y)].checker.y = board[int(
+            new_x), int(new_y)].y / 62.5
 
         for piece in self.jumped:
-            board[int(piece.x/62.5), int(piece.y/62.5)].checker = None
+            board[int(piece.x / 62.5), int(piece.y / 62.5)].checker = None
         return board
 
 
@@ -38,14 +44,14 @@ def findNeighbor(board, x, y, up=False, down=False):
     neighbors = []
     if not up:
         if x != 7 and y != 7:
-            neighbors.append(board[int(x+1), int(y+1)])
+            neighbors.append(board[int(x + 1), int(y + 1)])
         if x != 0 and y != 7:
-            neighbors.append(board[int(x-1), int(y+1)])
+            neighbors.append(board[int(x - 1), int(y + 1)])
     if not down:
         if x != 7 and y != 0:
-            neighbors.append(board[int(x+1), int(y-1)])
+            neighbors.append(board[int(x + 1), int(y - 1)])
         if x != 0 and y != 0:
-            neighbors.append(board[int(x-1), int(y-1)])
+            neighbors.append(board[int(x - 1), int(y - 1)])
     return neighbors
 
 
@@ -94,17 +100,21 @@ def findMoves(board, color):
             continue
         options = []
         if piece.checker.king:
-            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5)
+            pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5)
         elif color:
-            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5, down=True)
+            pieces = findNeighbor(board, piece.x / 62.5,
+                                  piece.y / 62.5, down=True)
         elif not color:
-            pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5, up=True)
+            pieces = findNeighbor(board, piece.x / 62.5,
+                                  piece.y / 62.5, up=True)
         for new_piece in pieces:
             dirs = []
             if color is True or piece.checker.king:
-                dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True))
+                dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y /
+                                          62.5, piece.x / 62.5, piece.y / 62.5, down=True))
             if color is False or piece.checker.king:
-                dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True))
+                dirs.append(checkNeighbor(new_piece.x / 62.5, new_piece.y /
+                                          62.5, piece.x / 62.5, piece.y / 62.5, up=True))
             for direction in dirs:
                 if direction[0] != -1:
                     options.append(new_piece)
@@ -124,19 +134,23 @@ def findJumps(board, color, old=None, depth=0):
         options = []
         dirs = []
         if piece.checker.king:
-            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5)
+            pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5)
         elif color:
-            pieces = findNeighbor(board, piece.x/62.5, piece.y/62.5, down=True)
+            pieces = findNeighbor(board, piece.x / 62.5,
+                                  piece.y / 62.5, down=True)
         elif not color:
-            pieces = findNeighbor(board, piece.x / 62.5, piece.y / 62.5, up=True)
+            pieces = findNeighbor(board, piece.x / 62.5,
+                                  piece.y / 62.5, up=True)
         for new_piece in pieces:
             dir = []
             if new_piece.checker is None or new_piece.checker.black == color:
                 continue
             if color is True or piece.checker.king:
-                dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, down=True))
+                dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y /
+                                         62.5, piece.x / 62.5, piece.y / 62.5, down=True))
             if color is False or piece.checker.king:
-                dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y / 62.5, piece.x / 62.5, piece.y / 62.5, up=True))
+                dir.append(checkNeighbor(new_piece.x / 62.5, new_piece.y /
+                                         62.5, piece.x / 62.5, piece.y / 62.5, up=True))
             for direction in dir:
                 if direction[0] != -1:
                     options.append(new_piece)
@@ -144,29 +158,33 @@ def findJumps(board, color, old=None, depth=0):
         x = 0
         for option in options:
             new_piece = None
-            if option.x / 62.5 == 0 or option.x / 62.5 == 7 or option.y/62.5 == 0 or option.y/62.5 == 7:
-                x+=1
+            if option.x / 62.5 == 0 or option.x / 62.5 == 7 or option.y / 62.5 == 0 or option.y / 62.5 == 7:
+                x += 1
                 continue
             if dirs[x] == 0:
-                new_piece = board[int(option.x / 62.5) + 1, int(option.y / 62.5) + 1]
+                new_piece = board[int(option.x / 62.5) + 1,
+                                  int(option.y / 62.5) + 1]
                 x += 1
             elif dirs[x] == 1:
-                new_piece = board[int(option.x / 62.5 - 1), int(option.y / 62.5 + 1)]
+                new_piece = board[int(option.x / 62.5 - 1),
+                                  int(option.y / 62.5 + 1)]
                 x += 1
             elif dirs[x] == 2:
-                new_piece = board[int(option.x / 62.5 + 1), int(option.y / 62.5 - 1)]
+                new_piece = board[int(option.x / 62.5 + 1),
+                                  int(option.y / 62.5 - 1)]
                 x += 1
             elif dirs[x] == 3:
-                new_piece = board[int(option.x / 62.5 - 1), int(option.y / 62.5 - 1)]
+                new_piece = board[int(option.x / 62.5 - 1),
+                                  int(option.y / 62.5 - 1)]
                 x += 1
             if new_piece.checker is None:
                 move = Move(piece.checker, new_piece, "Jump")
                 move.jumped.append(option)
                 new_board = model.copyBoard(board)
                 move.apply(new_board)
-                
+
                 if depth < 2:
-                    new_jumps = findJumps(new_board, color, option, depth+1)
+                    new_jumps = findJumps(new_board, color, option, depth + 1)
                     extra_jump = False
                     for jump in new_jumps:
                         if jump.checker.id == piece.checker.id:
@@ -190,6 +208,8 @@ def distanceToKing(y, color):
     return dif
 
 # Weighs a board based different types of available moves
+
+
 def weighBoard(board):
     white_moves = findMoves(board, False) + findJumps(board, False)
     black_moves = findMoves(board, True) + findJumps(board, True)
@@ -205,8 +225,7 @@ def weighBoard(board):
         elif move.type == "Move":
             move.weight = 0
         elif move.type == "Jump":
-            move.weight = 100 + move.distance - 1
-
+            move.weight = 100
     for move in black_moves:
         if doesMoveProtect(board, move, True):
             move.weight = -4
@@ -219,10 +238,9 @@ def weighBoard(board):
         elif move.type == "Move":
             move.weight = 0
         elif move.type == "Jump":
-            move.weight = -100 - move.distance + 1
+            move.weight = -100
 
     return (white_moves, black_moves)
-
 
 # Checks if a move is a suicide run for a checker
 # Improves AI significantly
@@ -239,26 +257,28 @@ def enemyJump(board, move, color):
 def doesMoveProtect(board, move, color):
     enemy_jumps = findJumps(board, not color)
     for jump in enemy_jumps:
-            if move.piece.x == jump.piece.x and move.piece.y == jump.piece.y:
-                return True
+        if move.piece.x == jump.piece.x and move.piece.y == jump.piece.y:
+            return True
     return False
 
 
 # Checks if a move kings the checker
 def doesMoveKing(board, move, color):
     if color:
-        if move.piece.x/62.5 == 7:
+        if move.piece.x / 62.5 == 7:
             return True
     elif not color:
-        if move.piece.x/62.5 == 0:
+        if move.piece.x / 62.5 == 0:
             return True
 
 # Checks if a move would cause an enemy jump
+
+
 def doesMoveEscape(board, move, color):
     enemy_jumps = findJumps(board, not color)
     for jump in enemy_jumps:
         for victim in jump.jumped:
-            if victim.x/62.5 == move.checker.x and victim.y/62.5 == move.checker.y:
+            if victim.x / 62.5 == move.checker.x and victim.y / 62.5 == move.checker.y:
                 return True
     return False
 
@@ -300,17 +320,22 @@ def minimax(depth, color, board, a, b):
     best_move = None
     if color:
         # Min
+        # Evaluates future impact of moves and ranks them accordingly
         for move in black_moves:
             if move.type == "Jump":
-                # The Ai has to jump
-                return move
+                best_move = move
+                b = min(b, best_move.weight)
+                if b <= a:
+                    break
 
-        # Evaluates future impact of moves and ranks them accordingly
+        if best_move is not None:
+            return best_move
+
         for move in black_moves:
             copy = model.copyBoard(board)
             val = minimax(depth + 1, False, move.apply(copy), a, b)
             if best_move is None or val.weight < best_move.weight:
-                best_move = val
+                best_move = move
             b = min(b, best_move.weight)
             if b <= a:
                 break
@@ -318,9 +343,10 @@ def minimax(depth, color, board, a, b):
     else:
         # Evaluates future impact of moves and ranks them accordingly
         for move in white_moves:
-            val = minimax(depth + 1, True, move.apply(model.copyBoard(board)), a, b)
+            val = minimax(depth + 1, True,
+                          move.apply(model.copyBoard(board)), a, b)
             if best_move is None or val.weight > best_move.weight:
-                best_move = val
+                best_move = move
             a = max(a, best_move.weight)
             if b <= a:
                 break

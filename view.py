@@ -63,9 +63,9 @@ def redraw():
     drawCheckers()
 
 
-def runAI():
+def runAI(color):
     t1 = time.time()
-    ai_move = ai.minimax(0, True, model.board, float("-inf"), float("inf"))
+    ai_move = ai.minimax(0, color, model.board, float("-inf"), float("inf"))
     t2 = time.time()
     print(t2-t1)
     ai_move.apply(model.board)
@@ -80,19 +80,14 @@ def chooseDif():
     entry.setText("2")
     entry.draw(difwin)
     difwin.getMouse()
-    ai.setDifficulty(int(entry.getText()))
+    ai.DIFFICULTY = int(entry.getText())
     difwin.close()
 
-def draw():
-    # chooseDif()
-    drawBoard()
-    drawCheckers()
-    while model.hasWon(model.board) == 0:
-        sleep(0.01)
-        model.King(model.board)
+def playerTurn(color):
+    while True:
         click1 = win.getMouse()
         checker = findPiece(click1)
-        if checker is None or model.board[int(checker[0]), int(checker[1])].checker is None or model.board[int(checker[0]), int(checker[1])].checker.black:
+        if checker is None or model.board[int(checker[0]), int(checker[1])].checker is None or model.board[int(checker[0]), int(checker[1])].checker.black is not color:
             continue
         click2 = win.getMouse()
         piece = findPiece(click2)
@@ -101,16 +96,25 @@ def draw():
         partial_move = ai.Move(model.board[int(checker[0]), int(checker[1])].checker, model.board[int(piece[0]), int(piece[1])],"?")
         partial_move.checker.x = checker[0]
         partial_move.checker.y = checker[1]
-        # TODO: Add move validation
         move = model.getFullMove(partial_move)
         if move is None:
             continue
         else:
             move.apply(model.board)
+            return
+
+def draw():
+    chooseDif()
+    drawBoard()
+    drawCheckers()
+    while model.hasWon(model.board) == 0:
+        sleep(0.01)
+        model.King(model.board)
+        playerTurn(False)
         model.King(model.board)
         redraw()
         win.update()
-        runAI()
+        runAI(True)
     winWindow = graphics.GraphWin("Game over")
     if model.hasWon(model.board) == 1:
         text = graphics.Text(Point(winWindow.width/2, winWindow.height/2), "You Won!!")
