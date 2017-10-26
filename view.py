@@ -1,9 +1,9 @@
-import graphics
-from graphics import Point
-import model
 from time import sleep
 import ai
 import time
+import graphics
+from graphics import Point
+import model
 
 
 width = 500

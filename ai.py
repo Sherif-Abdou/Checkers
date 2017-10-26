@@ -1,12 +1,11 @@
 import model
 from copy import deepcopy
 
-
 def takeChecker(x, y, board):
     board[x, y].checker = None
 
 
-DIFFICULTY = 3
+DIFFICULTY = 2
 
 
 def setDifficulty(val):
@@ -239,8 +238,8 @@ def weighBoard(board):
             move.weight = 0
         elif move.type == "Jump":
             move.weight = -100
-
-    return (white_moves, black_moves)
+    
+    return (sorted(white_moves, key=lambda move: move.weight), sorted(black_moves, key=lambda move: move.weight))
 
 # Checks if a move is a suicide run for a checker
 # Improves AI significantly
