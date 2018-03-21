@@ -33,11 +33,10 @@ class Move():
             new_x), int(new_y)].x / 62.5
         board[int(new_x), int(new_y)].checker.y = board[int(
             new_x), int(new_y)].y / 62.5
-
         for piece in self.jumped:
             board[int(piece.x / 62.5), int(piece.y / 62.5)].checker = None
         return board
-
+    
 
 def findNeighbor(board, x, y, up=False, down=False):
     neighbors = []
@@ -221,6 +220,8 @@ def weighBoard(board):
             move.weight = 3
         elif doesMoveKing(board, move, False):
             move.weight = 6
+        elif len(black_moves) == 3 and doesMoveWin(board, move, False):
+            move.weight = 200
         elif move.type == "Move":
             move.weight = 0
         elif move.type == "Jump":
@@ -234,6 +235,8 @@ def weighBoard(board):
             move.weight = -3
         elif doesMoveKing(board, move, True):
             move.weight = -6
+        elif len(white_moves) == 3 and doesMoveWin(board, move, True):
+            move.weight = -200
         elif move.type == "Move":
             move.weight = 0
         elif move.type == "Jump":
@@ -281,6 +284,20 @@ def doesMoveEscape(board, move, color):
                 return True
     return False
 
+
+# Checks if a move would win the game
+
+def doesMoveWin(board, move, color):
+    new_board = move.apply(board)
+    win_val = 0
+    if color:
+        win_val = -1
+    else: 
+        win_val = 1
+    if model.hasWon(board) == win_val:
+        return True
+    else:
+        return False
 
 # Does the work of computing what move to do next
 def minimax(depth, color, board, a, b):

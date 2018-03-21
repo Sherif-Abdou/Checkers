@@ -6,6 +6,7 @@ from graphics import Point
 import model
 
 
+
 width = 500
 height = 500
 offset_x = width / 8
