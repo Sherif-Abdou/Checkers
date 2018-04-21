@@ -1,8 +1,8 @@
 import copy
-
+import pickle
 import numpy
-
 import ai
+
 
 
 # The board's pieces
@@ -47,8 +47,6 @@ def moveChecker(checker, piece):
 # The main board of the game
 board = numpy.empty((8, 8), dtype=Piece)
 checkers = []
-piece_offset = False
-
 
 def addChecker(x, y):
     if y == 3 or y == 4:
@@ -105,3 +103,30 @@ def hasWon(board):
         return 1
     else:
         return 0
+
+def moveToHash(move, board):
+    string = ""
+    # for piece in board.flat:
+    #     if piece.checker is None or not piece.checker.black:
+    #         continue
+    #     string += " "+str(piece.checker.x)+str(piece.checker.y)
+    return hash(string.join(str(move.checker.x)+str(move.checker.y)+" "+str(move.piece.x)+str(move.piece.y)+" "+move.type))
+
+class TranspositionTable():
+    def __init__(self):
+        self.hashtable = {}
+            
+    def insert(self, move, nboard):
+        index = moveToHash(move, nboard)
+        self.hashtable[index] = move.weight
+    
+    def search(self, move, nboard):
+        index = moveToHash(move, nboard)
+        return self.hashtable[index]
+    def save(self):
+        save_file = open('save.dat', 'wb')
+        pickle.dump(self.hashtable, save_file)
+        save_file.close()
+
+ttable = TranspositionTable()
+

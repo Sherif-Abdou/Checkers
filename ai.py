@@ -212,7 +212,11 @@ def weighBoard(board):
     white_moves = findMoves(board, False) + findJumps(board, False)
     black_moves = findMoves(board, True) + findJumps(board, True)
     for move in white_moves:
-        if doesMoveProtect(board, move, False):
+        needhash = True
+        if model.moveToHash(move, board) in model.ttable.hashtable:
+            move.weight = model.ttable.search(move, board)
+            needhash = False
+        elif doesMoveProtect(board, move, False):
             move.weight = 4
         elif enemyJump(board, move, False):
             move.weight = -3
@@ -226,8 +230,14 @@ def weighBoard(board):
             move.weight = 0
         elif move.type == "Jump":
             move.weight = 100
+        if needhash:
+            model.ttable.insert(move, board)
     for move in black_moves:
-        if doesMoveProtect(board, move, True):
+        needhash = True
+        if model.moveToHash(move, board) in model.ttable.hashtable:
+            move.weight = model.ttable.search(move, board)
+            needhash = False
+        elif doesMoveProtect(board, move, True):
             move.weight = -4
         elif enemyJump(board, move, True):
             move.weight = 3
@@ -241,6 +251,8 @@ def weighBoard(board):
             move.weight = 0
         elif move.type == "Jump":
             move.weight = -100
+        if needhash:
+            model.ttable.insert(move, board)
     
     return (sorted(white_moves, key=lambda move: move.weight), sorted(black_moves, key=lambda move: move.weight))
 

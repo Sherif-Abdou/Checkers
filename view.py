@@ -6,7 +6,6 @@ from graphics import Point
 import model
 
 
-
 width = 500
 height = 500
 offset_x = width / 8
@@ -69,6 +68,8 @@ def runAI(color):
     ai_move = ai.minimax(0, color, model.board, float("-inf"), float("inf"))
     t2 = time.time()
     print(t2-t1)
+    #model.ttable.save()
+    model.ttable.hashtable = {}
     ai_move.apply(model.board)
     redraw()
     return ai_move
@@ -102,6 +103,7 @@ def playerTurn(color):
             continue
         else:
             move.apply(model.board)
+            redraw()
             return
 
 def draw():
@@ -113,7 +115,6 @@ def draw():
         model.King(model.board)
         playerTurn(False)
         model.King(model.board)
-        redraw()
         win.update()
         runAI(True)
     winWindow = graphics.GraphWin("Game over")
