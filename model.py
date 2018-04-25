@@ -106,10 +106,10 @@ def hasWon(board):
 
 def moveToHash(move, board):
     string = ""
-    # for piece in board.flat:
-    #     if piece.checker is None or not piece.checker.black:
-    #         continue
-    #     string += " "+str(piece.checker.x)+str(piece.checker.y)
+    for piece in board.flat:
+        if piece.checker is None or not piece.checker.black:
+            continue
+        string += " "+str(piece.checker.x)+str(piece.checker.y)
     return hash(string.join(str(move.checker.x)+str(move.checker.y)+" "+str(move.piece.x)+str(move.piece.y)+" "+move.type))
 
 class TranspositionTable():

@@ -216,43 +216,47 @@ def weighBoard(board):
         if model.moveToHash(move, board) in model.ttable.hashtable:
             move.weight = model.ttable.search(move, board)
             needhash = False
-        elif doesMoveProtect(board, move, False):
-            move.weight = 4
-        elif enemyJump(board, move, False):
-            move.weight = -3
-        elif doesMoveEscape(board, move, False):
-            move.weight = 3
-        elif doesMoveKing(board, move, False):
-            move.weight = 6
-        elif len(black_moves) == 3 and doesMoveWin(board, move, False):
-            move.weight = 200
-        elif move.type == "Move":
+        else:
             move.weight = 0
-        elif move.type == "Jump":
-            move.weight = 100
-        if needhash:
-            model.ttable.insert(move, board)
+            if doesMoveProtect(board, move, False):
+                move.weight += 3
+            if enemyJump(board, move, False):
+                move.weight += -3
+            if doesMoveEscape(board, move, False):
+                move.weight += 4
+            if doesMoveKing(board, move, False):
+                move.weight += 6
+            if len(black_moves) == 3 and doesMoveWin(board, move, False):
+                move.weight += 200
+            if move.type == "Move":
+                move.weight += 0
+            if move.type == "Jump":
+                move.weight += 100
+            if move.type != "Jump":
+                model.ttable.insert(move, board)
     for move in black_moves:
         needhash = True
         if model.moveToHash(move, board) in model.ttable.hashtable:
             move.weight = model.ttable.search(move, board)
             needhash = False
-        elif doesMoveProtect(board, move, True):
-            move.weight = -4
-        elif enemyJump(board, move, True):
-            move.weight = 3
-        elif doesMoveEscape(board, move, True):
-            move.weight = -3
-        elif doesMoveKing(board, move, True):
-            move.weight = -6
-        elif len(white_moves) == 3 and doesMoveWin(board, move, True):
-            move.weight = -200
-        elif move.type == "Move":
+        else:
             move.weight = 0
-        elif move.type == "Jump":
-            move.weight = -100
-        if needhash:
-            model.ttable.insert(move, board)
+            if doesMoveProtect(board, move, True):
+                move.weight += -3
+            if enemyJump(board, move, True):
+                move.weight += 3
+            if doesMoveEscape(board, move, True):
+                move.weight += -4
+            if doesMoveKing(board, move, True):
+                move.weight += -6
+            if len(white_moves) == 3 and doesMoveWin(board, move, True):
+                move.weight += -200
+            if move.type == "Move":
+                move.weight += 0
+            if move.type == "Jump":
+                move.weight += -100
+            if move.type != "Jump":
+                model.ttable.insert(move, board)
     
     return (sorted(white_moves, key=lambda move: move.weight), sorted(black_moves, key=lambda move: move.weight))
 
@@ -313,10 +317,11 @@ def doesMoveWin(board, move, color):
 
 # Does the work of computing what move to do next
 def minimax(depth, color, board, a, b):
+    moves = weighBoard(board)
     if color:
-        black_moves = weighBoard(board)[1]
+        black_moves = moves[1]
     elif not color:
-        white_moves = weighBoard(board)[0]
+        white_moves = moves[0]
     if depth == DIFFICULTY:
         if color:
             # Min
