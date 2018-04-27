@@ -66,6 +66,7 @@ def redraw():
 def runAI(color):
     t1 = time.time()
     ai_move = ai.minimax(0, color, model.board, float("-inf"), float("inf"))
+    print(ai_move.weight)
     t2 = time.time()
     print(t2-t1)
     #model.ttable.save()

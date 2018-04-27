@@ -20,6 +20,7 @@ class Move():
         self.distance = 1
         self.weight = None
         self.jumped = []
+        self.otherpieces = []
 
     # Applies a move to a given board
     def apply(self, board):
@@ -188,6 +189,7 @@ def findJumps(board, color, old=None, depth=0):
                         if jump.checker.id == piece.checker.id:
                             extra_jump = True
                             jump.jumped.append(option)
+                            jump.otherpieces.append(new_piece)
                             if old is not None:
                                 jump.jumped.append(old)
                             jump.checker = piece.checker
@@ -208,13 +210,13 @@ def distanceToKing(y, color):
 # Weighs a board based different types of available moves
 
 
-def weighBoard(board):
+def weighBoard(board, depth):
     white_moves = findMoves(board, False) + findJumps(board, False)
     black_moves = findMoves(board, True) + findJumps(board, True)
     for move in white_moves:
         needhash = True
-        if model.moveToHash(move, board) in model.ttable.hashtable:
-            move.weight = model.ttable.search(move, board)
+        if model.moveToHash(move, board, depth) in model.ttable.hashtable:
+            move.weight = model.ttable.search(move, board, depth)
             needhash = False
         else:
             move.weight = 0
@@ -222,6 +224,9 @@ def weighBoard(board):
                 move.weight += 3
             if enemyJump(board, move, False):
                 move.weight += -3
+            if doesMoveEndProtect(board, move, False):
+                #print("h")
+                move.weight += -5
             if doesMoveEscape(board, move, False):
                 move.weight += 4
             if doesMoveKing(board, move, False):
@@ -229,15 +234,17 @@ def weighBoard(board):
             if len(black_moves) == 3 and doesMoveWin(board, move, False):
                 move.weight += 200
             if move.type == "Move":
-                move.weight += 0
+                new_board = move.apply(model.copyBoard(board))
+                new_moves = findMoves(new_board, False) + findJumps(new_board, False)
+                move.weight += (len(new_moves)-len(white_moves))/100
             if move.type == "Jump":
-                move.weight += 100
+                move.weight += 99 + len(move.jumped)
             if move.type != "Jump":
-                model.ttable.insert(move, board)
+                model.ttable.insert(move, board, depth)
     for move in black_moves:
         needhash = True
-        if model.moveToHash(move, board) in model.ttable.hashtable:
-            move.weight = model.ttable.search(move, board)
+        if model.moveToHash(move, board, depth) in model.ttable.hashtable:
+            move.weight = model.ttable.search(move, board, depth)
             needhash = False
         else:
             move.weight = 0
@@ -245,6 +252,9 @@ def weighBoard(board):
                 move.weight += -3
             if enemyJump(board, move, True):
                 move.weight += 3
+            if doesMoveEndProtect(board, move, True):
+                #print("h")
+                move.weight += 5
             if doesMoveEscape(board, move, True):
                 move.weight += -4
             if doesMoveKing(board, move, True):
@@ -252,11 +262,13 @@ def weighBoard(board):
             if len(white_moves) == 3 and doesMoveWin(board, move, True):
                 move.weight += -200
             if move.type == "Move":
-                move.weight += 0
+                new_board = move.apply(model.copyBoard(board))
+                new_moves = findMoves(new_board, True) + findJumps(new_board, True)
+                move.weight += -((len(new_moves) - len(black_moves))/100)
             if move.type == "Jump":
-                move.weight += -100
+                move.weight += -99 - len(move.jumped)
             if move.type != "Jump":
-                model.ttable.insert(move, board)
+                model.ttable.insert(move, board, depth)
     
     return (sorted(white_moves, key=lambda move: move.weight), sorted(black_moves, key=lambda move: move.weight))
 
@@ -275,6 +287,9 @@ def enemyJump(board, move, color):
 def doesMoveProtect(board, move, color):
     enemy_jumps = findJumps(board, not color)
     for jump in enemy_jumps:
+        for otherpiece in jump.otherpieces:
+            if otherpiece.x == move.piece.x and otherpiece.y == move.piece.y:
+                return True
         if move.piece.x == jump.piece.x and move.piece.y == jump.piece.y:
             return True
     return False
@@ -315,15 +330,23 @@ def doesMoveWin(board, move, color):
     else:
         return False
 
+def doesMoveEndProtect(board, move, color):
+    jumps = findJumps(move.apply(model.copyBoard(board)), not color)
+    for jump in jumps:
+        for otherpiece in jump.otherpieces:
+            if otherpiece.x/62.5 == move.checker.x and otherpiece.y/62.5 == move.checker.y:
+                return True
+        if jump.piece.x/62.5 == move.checker.x and jump.piece.y/62.5 == move.checker.y:
+            return True
+
+    return False
+
 # Does the work of computing what move to do next
 def minimax(depth, color, board, a, b):
-    moves = weighBoard(board)
-    if color:
-        black_moves = moves[1]
-    elif not color:
-        white_moves = moves[0]
     if depth == DIFFICULTY:
+        moves = weighBoard(board, depth)
         if color:
+            black_moves = moves[1]
             # Min
             # Returns move best for black
             mini = None
@@ -337,6 +360,7 @@ def minimax(depth, color, board, a, b):
                     break
             return mini
         else:
+            white_moves = moves[0]
             # Max
             # Returns move best for white
             maxi = None
@@ -354,32 +378,27 @@ def minimax(depth, color, board, a, b):
     if color:
         # Min
         # Evaluates future impact of moves and ranks them accordingly
-        for move in black_moves:
-            if move.type == "Jump":
-                best_move = move
-                b = min(b, best_move.weight)
-                if b <= a:
-                    break
-
+        black_moves = findMoves(board, True) + findJumps(board, True)
         if best_move is not None:
             return best_move
 
         for move in black_moves:
             copy = model.copyBoard(board)
             val = minimax(depth + 1, False, move.apply(copy), a, b)
-            if best_move is None or val.weight < best_move.weight:
-                best_move = move
+            if best_move is None or val.weight < best_move.weight or move.type == "Jump":
+                best_move = val
             b = min(b, best_move.weight)
             if b <= a:
                 break
 
     else:
         # Evaluates future impact of moves and ranks them accordingly
+        white_moves = findMoves(board, False) + findJumps(board, False)
         for move in white_moves:
             val = minimax(depth + 1, True,
                           move.apply(model.copyBoard(board)), a, b)
             if best_move is None or val.weight > best_move.weight:
-                best_move = move
+                best_move = val
             a = max(a, best_move.weight)
             if b <= a:
                 break

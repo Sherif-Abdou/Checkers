@@ -104,24 +104,25 @@ def hasWon(board):
     else:
         return 0
 
-def moveToHash(move, board):
+
+def moveToHash(move, board, depth):
     string = ""
     for piece in board.flat:
         if piece.checker is None or not piece.checker.black:
             continue
-        string += " "+str(piece.checker.x)+str(piece.checker.y)
-    return hash(string.join(str(move.checker.x)+str(move.checker.y)+" "+str(move.piece.x)+str(move.piece.y)+" "+move.type))
+        string += " "+str(piece.checker.x)+str(piece.checker.y)+str(piece.checker.id)
+    return hash(string.join(str(depth)+str(move.checker.x)+str(move.checker.y)))
 
 class TranspositionTable():
     def __init__(self):
         self.hashtable = {}
             
-    def insert(self, move, nboard):
-        index = moveToHash(move, nboard)
+    def insert(self, move, nboard, depth):
+        index = moveToHash(move, nboard, depth)
         self.hashtable[index] = move.weight
     
-    def search(self, move, nboard):
-        index = moveToHash(move, nboard)
+    def search(self, move, nboard, depth):
+        index = moveToHash(move, nboard, depth)
         return self.hashtable[index]
     def save(self):
         save_file = open('save.dat', 'wb')
