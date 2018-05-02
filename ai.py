@@ -233,10 +233,6 @@ def weighBoard(board, depth):
                 move.weight += 6
             if len(black_moves) == 3 and doesMoveWin(board, move, False):
                 move.weight += 200
-            if move.type == "Move":
-                new_board = move.apply(model.copyBoard(board))
-                new_moves = findMoves(new_board, False) + findJumps(new_board, False)
-                move.weight += (len(new_moves)-len(white_moves))/100
             if move.type == "Jump":
                 move.weight += 99 + len(move.jumped)
             if move.type != "Jump":
@@ -261,10 +257,6 @@ def weighBoard(board, depth):
                 move.weight += -6
             if len(white_moves) == 3 and doesMoveWin(board, move, True):
                 move.weight += -200
-            if move.type == "Move":
-                new_board = move.apply(model.copyBoard(board))
-                new_moves = findMoves(new_board, True) + findJumps(new_board, True)
-                move.weight += -((len(new_moves) - len(black_moves))/100)
             if move.type == "Jump":
                 move.weight += -99 - len(move.jumped)
             if move.type != "Jump":

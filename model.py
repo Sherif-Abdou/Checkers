@@ -1,5 +1,6 @@
 import copy
 import pickle
+import random
 import numpy
 import ai
 
@@ -37,6 +38,7 @@ class Checker():
         self.black = False
         self.circle = None
         self.id = None
+        self.index = None
 
 
 def moveChecker(checker, piece):
@@ -53,6 +55,7 @@ def addChecker(x, y):
         return
     checker = Checker()
     checker.id = (x, y)
+    checker.index = x*8 + (y+1)
     if y < 4:
         checker.black = True
     checker.x = x
@@ -104,14 +107,24 @@ def hasWon(board):
     else:
         return 0
 
+zobrist_table = numpy.zeros((8, 8, 64))
+
+for i in range(0,8):
+    for j in range(0,8):
+        for k in range(0,64):
+            zobrist_table[i,j,k] = random.randint(0, 1000000)
 
 def moveToHash(move, board, depth):
-    string = ""
+    hsh = 0
     for piece in board.flat:
-        if piece.checker is None or not piece.checker.black:
+        if piece.checker is None:
             continue
-        string += " "+str(piece.checker.x)+str(piece.checker.y)+str(piece.checker.id)
-    return hash(string.join(str(depth)+str(move.checker.x)+str(move.checker.y)))
+        checker = piece.checker
+        hsh = hsh ^ int(zobrist_table[int(piece.x/62.5), int(piece.y/62.5), piece.checker.index])
+    hsh += hash(str(move.checker.id) + str(move.checker.x) + str(move.checker.y))
+    return hsh
+
+
 
 class TranspositionTable():
     def __init__(self):
